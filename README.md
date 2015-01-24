@@ -11,7 +11,8 @@ The whole project is divided into 4 phases. The current implementation goes up
 to the first one, which contemplates the lexicographical analysis.
 
 The tokens defined for the language are listed below. Each of the expressions
-written in the examples have the value of `true`.
+written in the examples have the value of `true`, with the exception of
+numerical values and instructions, which are not expressions.
 
 | *Token*           | *Symbol*                                      | *Example*                                         |
 |----------------   |-------------------------------------------    |------------------------------------------------   |
@@ -48,9 +49,9 @@ written in the examples have the value of `true`.
 | TkCPar            | )                                             | if (1 < 2) {print "true"}                         |
 | TkPlus            | +                                             | foo = 1 + 2                                       |
 | TkMinus           | -                                             | foo = 2 - 1; bar = -42                            |
-| TkTimes           | *                                             | foo = 6 * 7                                       |
-| TkDiv             | /                                             | foo = 84 / 2                                      |
-| TkMod             | %                                             | foo = 42 % 2                                      |
+| TkTimes           | *                                             | foo = 6 * 7 == 42                                 |
+| TkDiv             | /                                             | foo = 84 / 2 == 42                                |
+| TkMod             | %                                             | foo = 42 % 2 == 0                                 |
 | TkUnion           | ++                                            | foo = {1,2,3} ++ {4,5,6} == {1,2,3,4,5,6}         |
 | TkDiff            | \                                             | foo = {1,2,3} \ {3,4,5} == {1,2}                  |
 | TkIntersection    | ><                                            | foo = {1,2,3} >< {4,5,6} == {}                    |
@@ -68,5 +69,4 @@ written in the examples have the value of `true`.
 | TkLessOrEq        | <=                                            | foo = 1 <= 0                                      |
 | TkEquals          | ==                                            | foo = 1 ==1                                       |
 | TkNotEquals       | /=                                            | foo = 1 /= 0                                      |
-| TkIsIn            | @                                             |                                                   |
-
+| TkIsIn            | @                                             | foo = 1 @ {1,2,3}                                 |
