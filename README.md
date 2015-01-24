@@ -1,6 +1,8 @@
 Python implementation of the language Setlan
 ============================================
 
+Author: Victor De Ponte, 05-38087 ([email](mailto:rdbvictor19@gmail.com))
+
 
 `setlan` is a python implementation for the language Setlan, defined
 [here](http://ldc.usb.ve/~09-10285/files/def/setlan-3.pdf) (spanish). It was
@@ -11,6 +13,8 @@ The whole project is divided into 4 phases. The current implementation goes up
 to the first one, which contemplates the lexicographical analysis.
 
 Test files with their corresponding outputs can be found in the test folder.
+
+## List of Tokens
 
 The tokens defined for the language are listed below. Each of the expressions
 written in the examples have the value of `true`, with the exception of
@@ -72,3 +76,16 @@ numerical values and reserved words and instructions, which are not expressions.
 | TkEquals          | ==                                            | foo = 1 ==1                                       |
 | TkNotEquals       | /=                                            | foo = 1 /= 0                                      |
 | TkIsIn            | @                                             | foo = 1 @ {1,2,3}                                 |
+
+## Implementation decisions
+
+The implementation was made following
+[PLY's documentation](http://www.dabeaz.com/ply/ply.html), with the exception
+of:
+
+1. The column number is calculated for each token instead of only for error
+   handling.
+
+2. A new attribute is added to PLY's lexer object on the fly in case of lexical
+   errors, which is a list of `SetlanLexicalError`s which are in turn printed
+   *only* in case of errors.
