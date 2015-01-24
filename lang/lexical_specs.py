@@ -58,7 +58,7 @@ tokens = [
     'TkMod',           # %
     'TkUnion',         # ++
     'TkDiff',          # \
-    'TkIntersection',  # ><
+    'TkInter',         # ><
     'TkSPlus',         # <+>
     'TkSMinus',        # <->
     'TkSTimes',        # <*>
@@ -72,7 +72,7 @@ tokens = [
     'TkLess',          # <
     'TkLessOrEq',      # <=
     'TkEquals',        # ==
-    'TkNotEquals',     # /=
+    'TkNotEq',         # /=
     'TkIsIn'           # @
 ] + list(reserved.values())
 
@@ -197,7 +197,7 @@ def t_TkTimes(t):
     t.colno = find_column(t.lexer.lexdata,t)
     return t
 
-def t_TkNotEquals(t):
+def t_TkNotEq(t):
     r'/='
     t.colno = find_column(t.lexer.lexdata,t)
     return t
@@ -217,7 +217,7 @@ def t_TkDiff(t):
     t.colno = find_column(t.lexer.lexdata,t)
     return t
 
-def t_TkIntersection(t):
+def t_TkInter(t):
     r'><'
     t.colno = find_column(t.lexer.lexdata,t)
     return t

@@ -10,6 +10,8 @@ _"Traductores e interpretadores"_ (Compilers and interpreters).
 The whole project is divided into 4 phases. The current implementation goes up
 to the first one, which contemplates the lexicographical analysis.
 
+Test files with their corresponding outputs can be found in the test folder.
+
 The tokens defined for the language are listed below. Each of the expressions
 written in the examples have the value of `true`, with the exception of
 numerical values and reserved words and instructions, which are not expressions.
