@@ -25,6 +25,7 @@ reserved = {
     'in'      : 'TkIn',
     'scan'    : 'TkScan',
     'print'   : 'TkPrint',
+    'println' : 'TkPrintLn',
     'if'      : 'TkIf',
     'else'    : 'TkElse',
     'for'     : 'TkFor',
@@ -104,7 +105,7 @@ def t_TkId(t):
     return t
 
 def t_TkString(t):
-    r'"([^"\\]|\\.)*"'
+    r'"([^"\\\n\r]|\\.)*"'
     t.colno = find_column(t.lexer.lexdata,t)
     return t
 
