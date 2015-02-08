@@ -9,6 +9,8 @@
 # ------------------------------------------------------------
 from exceptions import SetlanLexicalError, SetlanValueError
 
+from lib.LexerWrapper import Token
+
 ################################################################################
 ############################# Tokens specification #############################
 ################################################################################
@@ -102,12 +104,12 @@ def t_TkId(t):
     r'[a-zA-Z][a-zA-Z0-9_]*'
     t.colno = find_column(t.lexer.lexdata,t)
     t.type = reserved.get(t.value,'TkId')    # Check for reserved words
-    return t
+    return Token(t)
 
 def t_TkString(t):
     r'"([^"\\\n\r]|\\.)*"'
     t.colno = find_column(t.lexer.lexdata,t)
-    return t
+    return Token(t)
 
 def t_TkNum(t):
     r'[0-9]+'
@@ -121,157 +123,157 @@ def t_TkNum(t):
         t.lexer.errors.append(SetlanValueError(message))
         import sys
         t.value = sys.maxint
-    return t
+    return Token(t)
 
 def t_TkOBrace(t):
     r'\{'
     t.colno = find_column(t.lexer.lexdata,t)
-    return t
+    return Token(t)
 
 def t_TkCBrace(t):
     r'\}'
     t.colno = find_column(t.lexer.lexdata,t)
-    return t
+    return Token(t)
 
 def t_TkOPar(t):
     r'\('
     t.colno = find_column(t.lexer.lexdata,t)
-    return t
+    return Token(t)
 
 def t_TkCPar(t):
     r'\)'
     t.colno = find_column(t.lexer.lexdata,t)
-    return t
+    return Token(t)
 
 def t_TkComma(t):
     r','
     t.colno = find_column(t.lexer.lexdata,t)
-    return t
+    return Token(t)
 
 def t_TkSColon(t):
     r';'
     t.colno = find_column(t.lexer.lexdata,t)
-    return t
+    return Token(t)
 
 def t_TkSPlus(t):
     r'<\+>'
     t.colno = find_column(t.lexer.lexdata,t)
-    return t
+    return Token(t)
 
 def t_TkSMinus(t):
     r'<->'
     t.colno = find_column(t.lexer.lexdata,t)
-    return t
+    return Token(t)
 
 def t_TkSTimes(t):
     r'<\*>'
     t.colno = find_column(t.lexer.lexdata,t)
-    return t
+    return Token(t)
 
 def t_TkSDiv(t):
     r'</>'
     t.colno = find_column(t.lexer.lexdata,t)
-    return t
+    return Token(t)
 
 def t_TkSMod(t):
     r'<%>'
     t.colno = find_column(t.lexer.lexdata,t)
-    return t
+    return Token(t)
 
 def t_TkUnion(t):
     r'\+\+'
     t.colno = find_column(t.lexer.lexdata,t)
-    return t
+    return Token(t)
 
 def t_TkPlus(t):
     r'\+'
     t.colno = find_column(t.lexer.lexdata,t)
-    return t
+    return Token(t)
 
 def t_TkMinus(t):
     r'-'
     t.colno = find_column(t.lexer.lexdata,t)
-    return t
+    return Token(t)
 
 def t_TkTimes(t):
     r'\*'
     t.colno = find_column(t.lexer.lexdata,t)
-    return t
+    return Token(t)
 
 def t_TkNotEq(t):
     r'/='
     t.colno = find_column(t.lexer.lexdata,t)
-    return t
+    return Token(t)
 
 def t_TkDiv(t):
     r'/'
     t.colno = find_column(t.lexer.lexdata,t)
-    return t
+    return Token(t)
 
 def t_TkMod(t):
     r'%'
     t.colno = find_column(t.lexer.lexdata,t)
-    return t
+    return Token(t)
 
 def t_TkDiff(t):
     r'\\'
     t.colno = find_column(t.lexer.lexdata,t)
-    return t
+    return Token(t)
 
 def t_TkInter(t):
     r'><'
     t.colno = find_column(t.lexer.lexdata,t)
-    return t
+    return Token(t)
 
 def t_TkGetMax(t):
     r'>\?'
     t.colno = find_column(t.lexer.lexdata,t)
-    return t
+    return Token(t)
 
 def t_TkGetMin(t):
     r'<\?'
     t.colno = find_column(t.lexer.lexdata,t)
-    return t
+    return Token(t)
 
 def t_TkSize(t):
     r'\$\?'
     t.colno = find_column(t.lexer.lexdata,t)
-    return t
+    return Token(t)
 
 def t_TkEquals(t):
     r'=='
     t.colno = find_column(t.lexer.lexdata,t)
-    return t
+    return Token(t)
 
 def t_TkGreatOrEq(t):
     r'>='
     t.colno = find_column(t.lexer.lexdata,t)
-    return t
+    return Token(t)
 
 def t_TkLessOrEq(t):
     r'<='
     t.colno = find_column(t.lexer.lexdata,t)
-    return t
+    return Token(t)
 
 def t_TkGreat(t):
     r'>'
     t.colno = find_column(t.lexer.lexdata,t)
-    return t
+    return Token(t)
 
 def t_TkLess(t):
     r'<'
     t.colno = find_column(t.lexer.lexdata,t)
-    return t
+    return Token(t)
 
 def t_TkAssign(t):
     r'='
     t.colno = find_column(t.lexer.lexdata,t)
-    return t
+    return Token(t)
 
 def t_TkIsIn(t):
     r'@'
     t.colno = find_column(t.lexer.lexdata,t)
-    return t
+    return Token(t)
 
 # Error handling rule
 def t_error(t):
@@ -279,7 +281,7 @@ def t_error(t):
     if not hasattr(t.lexer, 'errors'):
         t.lexer.errors = []
     message = "In line %d, column %d: Unexpected character '%s'." % (t.lineno, t.colno, t.value[0])
-    t.lexer.errors.append(SetlanValueError(message))
+    t.lexer.errors.append(SetlanLexicalError(message))
     t.lexer.skip(1)
 ################################################################################
 ######################### End of Tokens specification ##########################

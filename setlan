@@ -16,57 +16,86 @@
 # ------------------------------------------------------------
 import sys
 
-import ply.lex as lex
+from lang import lexical_specs, syntax_specs
+from lang.exceptions import (
+    SetlanInputNotDefinedException,
+    SetlanTokensNotDefinedException,
+    SetlanLexicalErrors,
+    SetlanValueError,
+    SetlanSyntaxError
+    )
 
-from lang import lexical_specs
+from lib.LexerWrapper import Lexer
 
-SUCCESS = 0
-ERR_BAD_USAGE = 1
-ERR_BAD_FILENAME = 2
-ERR_IO_ERROR = 3
-ERR_LEXICOGRAPHICAL_ERROR = 4
-#ERR_SYNTAX_ERROR = 5
-#ERR_SCOPE_ERROR = 6
-#ERR_TYPE_ERROR = 7
-#ERR_ZERO_DIVISION = 8
+from ply import yacc
 
-USAGE = ' Usage:\n\n\t$ ./setlan program.stl\n\n where "program.stl" is a file containing the program to be analyzed.'
+class SetlanInterpreter(object):
+    SUCCESS = 0
+    ERR_BAD_USAGE = 1
+    ERR_BAD_FILENAME = 2
+    ERR_IO_ERROR = 3
+    ERR_LEXICOGRAPHICAL_ERROR = 4
+    ERR_VALUE_ERROR = 5
+    ERR_INPUT_NOT_PROVIDED = 6
+    ERR_LANG_LEX_MODULE_NOT_PROVIDED = 7
+    ERR_SYNTAX_ERROR = 8
+    #ERR_SCOPE_ERROR = 6
+    #ERR_TYPE_ERROR = 7
+    #ERR_ZERO_DIVISION = 8
 
-def lexInput():
-    matched_tokens = []
-    for token in iter(lexer.token, None):
-        matched_tokens.append(token)
-    if hasattr(lexer, 'errors'):
-        for error in lexer.errors:
-            print error
-        exit(ERR_LEXICOGRAPHICAL_ERROR)
-    else :
-        for token in matched_tokens:
-            print "token %s\t value (%s) at line %d, column %d" % (
-                token.type,
-                str(token.value),
-                token.lineno,
-                token.colno
-                )
-        exit(SUCCESS)
+    USAGE = ' Usage:\n\n\t$ ./setlan program.stl\n\n where "program.stl" is a file containing the program to be analyzed.'
+
+    def processArgs(self, args):
+        if len(args) == 2:
+            filename = args[1]
+        else:
+            print USAGE
+            exit(ERR_BAD_USAGE)
+        try :
+            file = open(filename, 'r')
+        except IOError as e:
+            print "setlan: IOError: %s" % str(e)
+            exit(ERR_BAD_FILENAME)
+        try:
+            self._inputString = file.read()
+        except IOError as e:
+            print "setlan: IOError: %s" % str(e)
+            exit(ERR_IO_ERROR)
+        self._build()
+        return True
+
+    def _build(self):
+        self._lexer = None
+        self._parser = None
+        self._ast = None
+
+    def run(self, print_lex=False, print_ast=False):
+        self._lexer = Lexer(module=lexical_specs, inputString=self._inputString)
+        if print_lex:
+            for token in iter(self._lexer.token, None):
+                print token
+        else:
+            self._parser = yacc.yacc(module=syntax_specs)
+            self._ast = self._parser.parse(lexer=self._lexer)
 
 if __name__ == '__main__':
-    if len(sys.argv) == 2:
-        filename = sys.argv[1]
-    else:
-        print USAGE
-        exit(ERR_BAD_USAGE)
-    try :
-        file = open(filename, 'r')
-    except IOError as e:
-        print "setlan: IOError: %s" % str(e)
-        exit(ERR_BAD_FILENAME)
-    try:
-        inputString = file.read()
-    except IOError as e:
-        print "setlan: IOError: %s" % str(e)
-        exit(ERR_IO_ERROR)
-
-    lexer = lex.lex(module=lexical_specs)
-    lexer.input(inputString)
-    lexInput()
+    setlan = SetlanInterpreter()
+    if (setlan.processArgs(sys.argv)):
+        try:
+            setlan.run()
+            exit(SetlanInterpreter.SUCCESS)
+        except SetlanInputNotDefinedException as einp:
+            print einp
+            exit(SetlanInterpreter.ERR_INPUT_NOT_PROVIDED)
+        except SetlanTokensNotDefinedException as etnd:
+            print etnd
+            exit(SetlanInterpreter.ERR_LANG_LEX_MODULE_NOT_PROVIDED)
+        except SetlanLexicalErrors as esle:
+            print esle
+            exit(SetlanInterpreter.ERR_LEXICOGRAPHICAL_ERROR)
+        except SetlanValueError as esve:
+            print esve
+            exit(SetlanInterpreter.ERR_VALUE_ERROR)
+        except SetlanSyntaxError as esse:
+            print esse
+            exit(SetlanInterpreter.ERR_SYNTAX_ERROR)
