@@ -1,0 +1,11 @@
+program {
+    using
+        set x,y,z;
+        int i,j,k;
+        bool t,f;
+    in
+    if ( 5 > 3) 
+    println "Variables: ",x,y,z,i,j,k,t,f
+    else 
+    print "No se imprimira nada";
+}

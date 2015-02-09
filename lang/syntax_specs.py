@@ -12,7 +12,8 @@
 from exceptions import SetlanSyntaxError
 
 from lexical_specs import tokens
-#from ast import *
+
+from ast import *
 
 ##########
 ## List of tokens to be used by ply.yacc
@@ -49,11 +50,11 @@ precedence = (
 start = 'Setlan'
 
 #Gramatic Definitions
-def p_Trinity(p):
+def p_Setlan(p):
     '''
     Setlan : TkProgram Instruction
     '''
-    pass
+    p[0] = Setlan(instruction=p[2], position=(p.lineno(1), p.lexpos(1)))
 
 def p_Instruction(p):
     '''
@@ -65,348 +66,439 @@ def p_Instruction(p):
                 | For
                 | While
     '''
-    pass
+    p[0] = p[1]
 
 def p_Assignment(p):
     '''
     Assignment : TkId TkAssign Expression
     '''
-    pass
+    p[0] = Assignment(Variable(p[1], position=(p.lineno(1), p.lexpos(1))), p[3], position=(p.lineno(1), p.lexpos(1)))
 
 def p_Block(p):
     '''
     Block : TkOBrace VariableDeclarations InstructionsList TkCBrace
     '''
-    pass
+    p[0] = Block(p[2], p[3], position=(p.lineno(1), p.lexpos(1)))
 
 def p_VariableDeclarations(p):
     '''
     VariableDeclarations : TkUsing VariableDeclarationList TkIn
-                         | lambda
     '''
-    pass
+    p[0] = p[2]
+
+def p_VariableDeclarations_lambda(p):
+    '''
+    VariableDeclarations : lambda
+    '''
+    p[0] = p[1]
+
+def p_VariableDeclarationList_list(p):
+    '''
+    VariableDeclarationList : VariableDeclarationList VariableDeclaration TkSColon
+    '''
+    p[0] = p[1] + [p[2]]
 
 def p_VariableDeclarationList(p):
     '''
-    VariableDeclarationList : VariableDeclarationList VariableDeclaration TkSColon
-                            | VariableDeclaration TkSColon
+    VariableDeclarationList : VariableDeclaration TkSColon
     '''
-    pass
+    p[0] = [p[1]]
+    
 
 def p_VariableDeclaration(p):
     '''
     VariableDeclaration : Type VariableList
     '''
-    pass
+    p[0] = VariableDeclaration(p[1], p[2], position=(p.lineno(1), p.lexpos(1)))
 
-def p_Type(p):
+
+def p_Type_int(p):
     '''
     Type : TkInt
-         | TkBool
-         | TkSet
     '''
-    pass
+    p[0] = IntegerType(position=(p.lineno(1), p.lexpos(1)))
+
+
+def p_Type_bool(p):
+    '''
+    Type : TkBool
+    '''
+    p[0] = BooleanType(position=(p.lineno(1), p.lexpos(1)))
+
+
+def p_Type_set(p):
+    '''
+    Type : TkSet
+    '''
+    p[0] = SetType(position=(p.lineno(1), p.lexpos(1)))
+
+
+def p_VariableList_list(p):
+    '''
+    VariableList : VariableList TkComma TkId
+    '''
+    p[0] = p[1] + [Variable(p[3], position=(p.lineno(3), p.lexpos(3)))]
+
 
 def p_VariableList(p):
     '''
-    VariableList : VariableList TkComma TkId
-                 | TkId
+    VariableList : TkId
     '''
-    pass
+    p[0] = [Variable(p[1], position=(p.lineno(1), p.lexpos(1)))]
+
+def p_InstructionList_list(p):
+    '''
+    InstructionsList : InstructionsList Instruction TkSColon
+    '''
+    p[0] = p[1] + [p[2]]
 
 def p_InstructionList(p):
     '''
-    InstructionsList : InstructionsList Instruction TkSColon
-                     | Instruction TkSColon
+    InstructionsList : Instruction TkSColon
     '''
-    pass
+    p[0] = [p[1]]
 
 def p_Input(p):
     '''
     Input : TkScan TkId
     '''
-    pass
+    p[0] = Input(Variable(p[2], position=(p.lineno(2), p.lexpos(2))), position=(p.lineno(1), p.lexpos(1)))
 
 def p_Output(p):
     '''
     Output : Println
            | Print
     '''
-    pass
+    p[0] = p[1]
 
 def p_Println(p):
     '''
     Println : TkPrintLn PrintableList 
     '''
-    pass
+    p[0] = Output(p[2], position=(p.lineno(1), p.lexpos(1)), sufix="\n")
 
 def p_Print(p):
     '''
     Print : TkPrint PrintableList
     '''
-    pass
+    p[0] = Output(p[2], position=(p.lineno(1), p.lexpos(1)))
+
+def p_PrintableList_list(p):
+    '''
+    PrintableList : PrintableList TkComma Printable
+    '''
+    p[0] = p[1] + [p[3]]
 
 def p_PrintableList(p):
     '''
-    PrintableList : PrintableList TkComma Printable
-                  | Printable
+    PrintableList : Printable
     '''
-    pass
+    p[0] = [p[1]]
 
-def p_Printable(p):
+def p_Printable_exp(p):
     '''
     Printable : Expression
-              | TkString
     '''
-    pass
+    p[0] = p[1]
+
+def p_Printable_str(p):
+    '''
+    Printable : TkString
+    '''
+    p[0] = String(p[1], position=(p.lineno(1), p.lexpos(1)))
 
 def p_Conditional(p):
     '''
-    Conditional : TkIf TkOPar Expression TkCPar Instruction TkElse Instruction
+    Conditional : TkIf TkOPar Expression TkCPar Instruction Else
     '''
-    pass
+    p[0] = Conditional(p[3], p[5], p[6], position=(p.lineno(1), p.lexpos(1)))
+
+def p_Else(p):
+    '''
+    Else : TkElse Instruction
+    '''
+    p[0] = p[2]
+
+def p_Else_lambda(p):
+    '''
+    Else : lambda
+    '''
+    p[0] = None
 
 def p_For(p):
     '''
-    For : TkFor TkId Ordering Expression Do
+    For : TkFor TkId Ordering Expression TkDo Instruction
     '''
-    pass
+    p[0] = ForLoop(Variable(p[2], position=(p.lineno(2), p.lexpos(2))), p[3], p[4], p[6], position=(p.lineno(1), p.lexpos(1)))
 
-def p_Ordering(p):
+def p_Ordering_min(p):
     '''
     Ordering : TkMin
-             | TkMax
     '''
-    pass
+    p[0] = True
+
+def p_Ordering_max(p):
+    '''
+    Ordering : TkMax
+    '''
+    p[0] = False
 
 def p_While(p):
     '''
     While : Repeat TkWhile TkOPar Expression TkCPar Do
     '''
-    pass
+    p[0] = RepeatWhileLoop(p[1], p[4], p[6], position=(p.lineno(1), p.lexpos(1)))
 
 def p_Repeat(p):
     '''
     Repeat : TkRepeat Instruction
-           | lambda
     '''
-    pass
+    p[0] = p[2]
+
+def p_Repeat_lambda(p):
+    '''
+    Repeat : lambda
+    '''
+    p[0] = None
 
 def p_Do(p):
     '''
     Do : TkDo Instruction
     '''
-    pass
+    p[0] = p[2]
+
+def p_Do_lambda(p):
+    '''
+    Do : lambda
+    '''
+    p[0] = None
 
 
 def p_Expression(p):
     '''
-    Expression : TkOPar Expression TkCPar
-               | BinaryExpression
+    Expression : BinaryExpression
                | UnaryExpression
                | Literal
-               | TkId
     '''
-    pass
+    p[0] = p[1]
+
+
+def p_Expression_parenthesized(p):
+    '''
+    Expression : TkOPar Expression TkCPar
+    '''
+    p[0] = p[2]
+
+
+def p_Expression_variable(p):
+    '''
+    Expression : TkId
+    '''
+    p[0] = Variable(p[1], position=(p.lineno(1), p.lexpos(1)))
 
 def p_BinaryExpression_Sum(p):
     '''
     BinaryExpression : Expression TkPlus Expression
     '''
-    pass
+    p[0] = Sum(p[1], p[3], position=(p.lineno(1), p.lexpos(1)))
 
 def p_BinaryExpression_Subtraction(p):
     '''
     BinaryExpression : Expression TkMinus Expression
     '''
-    pass
+    p[0] = Subtraction(p[1], p[3], position=(p.lineno(1), p.lexpos(1)))
 
 def p_BinaryExpression_Times(p):
     '''
     BinaryExpression : Expression TkTimes Expression
     '''
-    pass
+    p[0] = Times(p[1], p[3], position=(p.lineno(1), p.lexpos(1)))
 
 def p_BinaryExpression_Division(p):
     '''
     BinaryExpression : Expression TkDiv Expression
     '''
-    pass
+    p[0] = Division(p[1], p[3], position=(p.lineno(1), p.lexpos(1)))
 
 def p_BinaryExpression_Modulus(p):
     '''
     BinaryExpression : Expression TkMod Expression
     '''
-    pass
+    p[0] = Modulus(p[1], p[3], position=(p.lineno(1), p.lexpos(1)))
 
 def p_BinaryExpression_Union(p):
     '''
     BinaryExpression : Expression TkUnion Expression
     '''
-    pass
+    p[0] = Union(p[1], p[3], position=(p.lineno(1), p.lexpos(1)))
 
 def p_BinaryExpression_Difference(p):
     '''
     BinaryExpression : Expression TkDiff Expression
     '''
-    pass
+    p[0] = Difference(p[1], p[3], position=(p.lineno(1), p.lexpos(1)))
 
 def p_BinaryExpression_Intersection(p):
     '''
     BinaryExpression : Expression TkInter Expression
     '''
-    pass
+    p[0] = Intersection(p[1], p[3], position=(p.lineno(1), p.lexpos(1)))
 
 def p_BinaryExpression_SSum(p):
     '''
     BinaryExpression : Expression TkSPlus Expression
     '''
-    pass
+    p[0] = SetSum(p[1], p[3], position=(p.lineno(1), p.lexpos(1)))
 
 def p_BinaryExpression_SSubtraction(p):
     '''
     BinaryExpression : Expression TkSMinus Expression
     '''
-    pass
+    p[0] = SetSubtraction(p[1], p[3], position=(p.lineno(1), p.lexpos(1)))
 
 def p_BinaryExpression_STimes(p):
     '''
     BinaryExpression : Expression TkSTimes Expression
     '''
-    pass
+    p[0] = SetTimes(p[1], p[3], position=(p.lineno(1), p.lexpos(1)))
 
 def p_BinaryExpression_SDivision(p):
     '''
     BinaryExpression : Expression TkSDiv Expression
     '''
-    pass
+    p[0] = SetDivision(p[1], p[3], position=(p.lineno(1), p.lexpos(1)))
 
 def p_BinaryExpression_SModulus(p):
     '''
     BinaryExpression : Expression TkSMod Expression
     '''
-    pass
+    p[0] = SetModulus(p[1], p[3], position=(p.lineno(1), p.lexpos(1)))
 
 def p_BinaryExpression_Boolean_GreaterThan(p):
     '''
     BinaryExpression : Expression TkGreat Expression
     '''
-    pass
+    p[0] = GreaterThan(p[1], p[3], position=(p.lineno(1), p.lexpos(1)))
 
 def p_BinaryExpression_Boolean_GreaterOrEqual(p):
     '''
     BinaryExpression : Expression TkGreatOrEq Expression
     '''
-    pass
+    p[0] = GreaterOrEqual(p[1], p[3], position=(p.lineno(1), p.lexpos(1)))
 
 def p_BinaryExpression_Boolean_LessThan(p):
     '''
     BinaryExpression : Expression TkLess Expression
     '''
-    pass
+    p[0] = LessThan(p[1], p[3], position=(p.lineno(1), p.lexpos(1)))
 
 def p_BinaryExpression_Boolean_LessOrEqual(p):
     '''
     BinaryExpression : Expression TkLessOrEq Expression
     '''
-    pass
+    p[0] = LessOrEqual(p[1], p[3], position=(p.lineno(1), p.lexpos(1)))
 
 def p_BinaryExpression_Boolean_Equals(p):
     '''
     BinaryExpression : Expression TkEquals Expression
     '''
-    pass
+    p[0] = Equals(p[1], p[3], position=(p.lineno(1), p.lexpos(1)))
 
 def p_BinaryExpression_Boolean_NotEquals(p):
     '''
     BinaryExpression : Expression TkNotEq Expression
     '''
-    pass
+    p[0] = NotEquals(p[1], p[3], position=(p.lineno(1), p.lexpos(1)))
 
 def p_BinaryExpression_Boolean_And(p):
     '''
     BinaryExpression : Expression TkAnd Expression
     '''
-    pass
+    p[0] = And(p[1], p[3], position=(p.lineno(1), p.lexpos(1)))
 
 def p_BinaryExpression_Boolean_Or(p):
     '''
     BinaryExpression : Expression TkOr Expression
     '''
-    pass
+    p[0] = Or(p[1], p[3], position=(p.lineno(1), p.lexpos(1)))
 
 def p_BinaryExpression_Boolean_IsIn(p):
     '''
     BinaryExpression : Expression TkIsIn Expression
     '''
-    pass
+    p[0] = IsIn(p[1], p[3], position=(p.lineno(1), p.lexpos(1)))
 
 def p_UnaryExpression_UMinus(p):
     '''
     UnaryExpression : TkMinus Expression %prec UMINUS
     '''
-    pass
+    p[0] = Minus(p[2], position=(p.lineno(1), p.lexpos(1)))
 
 def p_UnaryExpression_GetMax(p):
     '''
     UnaryExpression : TkGetMax Expression
     '''
-    pass
+    p[0] = GetMax(p[2], position=(p.lineno(1), p.lexpos(1)))
 
 def p_UnaryExpression_GetMin(p):
     '''
     UnaryExpression : TkGetMin Expression
     '''
-    pass
+    p[0] = GetMin(p[2], position=(p.lineno(1), p.lexpos(1)))
 
 def p_UnaryExpression_GetSize(p):
     '''
     UnaryExpression : TkSize Expression
     '''
-    pass
+    p[0] = GetSize(p[2], position=(p.lineno(1), p.lexpos(1)))
 
 def p_UnaryExpression_Boolean_Not(p):
     '''
     UnaryExpression : TkNot Expression
     '''
-    pass
+    p[0] = Not(p[2], position=(p.lineno(1), p.lexpos(1)))
 
 def p_Literal_Num(p):
     '''
     Literal : TkNum
     '''
-    pass
+    p[0] = Number(p[1], position=(p.lineno(1), p.lexpos(1)))
 
 def p_Literal_True(p):
     '''
     Literal : TkTrue
     '''
-    pass
+    p[0] = TrueValue(position=(p.lineno(1), p.lexpos(1)))
 
 def p_Literal_False(p):
     '''
     Literal : TkFalse
     '''
-    pass
+    p[0] = FalseValue(position=(p.lineno(1), p.lexpos(1)))
 
 def p_Literal_Set(p):
     '''
     Literal : Set
     '''
-    pass
+    p[0] = Set(p[1], position=(p.lineno(1), p.lexpos(1)))
 
 def p_Set(p):
     '''
     Set : TkOBrace ExpressionList TkCBrace
     '''
-    pass
+    p[0] = p[2]
+
+def p_ExpressionList_list(p):
+    '''
+    ExpressionList : ExpressionList TkComma Expression
+    '''
+    p[0] = p[1] + [p[3]]
 
 def p_ExpressionList(p):
     '''
-    ExpressionList : ExpressionList TkComma Expression
-                   | Expression
+    ExpressionList : Expression
     '''
-    pass
+    p[0] = [p[1]]
 
 def p_lambda(p):
     '''

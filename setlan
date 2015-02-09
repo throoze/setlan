@@ -69,7 +69,7 @@ class SetlanInterpreter(object):
         self._parser = None
         self._ast = None
 
-    def run(self, print_lex=False, print_ast=False):
+    def run(self, print_lex=False, print_ast=True):
         self._lexer = Lexer(module=lexical_specs, inputString=self._inputString)
         if print_lex:
             for token in iter(self._lexer.token, None):
@@ -77,6 +77,8 @@ class SetlanInterpreter(object):
         else:
             self._parser = yacc.yacc(module=syntax_specs)
             self._ast = self._parser.parse(lexer=self._lexer)
+            if print_ast :
+                print self._ast
 
 if __name__ == '__main__':
     setlan = SetlanInterpreter()
