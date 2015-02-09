@@ -89,3 +89,59 @@ of:
 2. A new attribute is added to PLY's lexer object on the fly in case of lexical
    errors, which is a list of `SetlanLexicalError`s which are in turn printed
    *only* in case of errors.
+
+3. Wrapper classes were created in order to modify the behavior of PLY's Tokens
+   and the lexer itself. That way, the lexer can process all the errors before
+   raising the exception.
+
+4. A more object oriented structure was decided while rewriting the main module.
+   (See `setlan` file).
+
+## Project status
+
+So far the complete parser is implemented with the first approach to the
+grammatic. This approach has one shift/reduce conflict when resolving the
+`if then else` instruction. This grammatic rule is implemented as follows:
+
+```
+Conditional : TkIf TkOPar Expression TkCPar Instruction Else
+
+Else : TkElse Instruction
+     | lambda
+```
+
+PLY's yacc throws the following warning message in the `parser.out` file:
+
+```
+
+WARNING: 
+WARNING: Conflicts:
+WARNING: 
+WARNING: shift/reduce conflict for TkElse in state 134 resolved as shift
+```
+
+Referencing the following rule:
+
+
+```
+state 134
+
+    (32) Conditional -> TkIf TkOPar Expression TkCPar Instruction . Else
+    (33) Else -> . TkElse Instruction
+    (34) Else -> . lambda
+    (82) lambda -> .
+
+  ! shift/reduce conflict for TkElse resolved as shift
+    TkElse          shift and go to state 141
+    $end            reduce using rule 82 (lambda -> .)
+    TkWhile         reduce using rule 82 (lambda -> .)
+    TkSColon        reduce using rule 82 (lambda -> .)
+
+  ! TkElse          [ reduce using rule 82 (lambda -> .) ]
+
+    lambda                         shift and go to state 143
+    Else                           shift and go to state 142
+```
+
+Even though the cause of the `shift/reduce` conflict is clear, a solution
+couldn't be found. Any suggestions would be appreciated.
