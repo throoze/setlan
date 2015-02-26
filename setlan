@@ -15,6 +15,7 @@
 # analyzed.
 # ------------------------------------------------------------
 import sys
+import argparse
 
 from lang import lexical_specs, syntax_specs
 from lang.exceptions import (
@@ -22,37 +23,47 @@ from lang.exceptions import (
     SetlanTokensNotDefinedException,
     SetlanLexicalErrors,
     SetlanValueError,
-    SetlanSyntaxError
+    SetlanSyntaxError,
+    SetlanScopeError,
+    SetlanTypeError
     )
+from lang.config import SetlanConfig
 
 from lib.LexerWrapper import Lexer
 
 from ply import yacc
 
-class SetlanInterpreter(object):
-    SUCCESS = 0
-    ERR_BAD_USAGE = 1
-    ERR_BAD_FILENAME = 2
-    ERR_IO_ERROR = 3
-    ERR_LEXICOGRAPHICAL_ERROR = 4
-    ERR_VALUE_ERROR = 5
-    ERR_INPUT_NOT_PROVIDED = 6
-    ERR_LANG_LEX_MODULE_NOT_PROVIDED = 7
-    ERR_SYNTAX_ERROR = 8
-    #ERR_SCOPE_ERROR = 6
-    #ERR_TYPE_ERROR = 7
-    #ERR_ZERO_DIVISION = 8
+class SetlanInterpreter(SetlanConfig):
 
-    USAGE = ' Usage:\n\n\t$ ./setlan program.stl\n\n where "program.stl" is a file containing the program to be analyzed.'
+    def __init__(self, *args, **kwargs):
+        super(SetlanInterpreter, self).__init__()
+        self._opts = None
 
     def processArgs(self, args):
-        if len(args) == 2:
-            filename = args[1]
-        else:
-            print self.USAGE
-            exit(self.ERR_BAD_USAGE)
+        description  = "Setlan language interpreter, written in python, using "
+        description += "PLY's lexing and parsing engine. At this point, only "
+        description += "lexing, parsing and static checks are supported."
+        args_parser = argparse.ArgumentParser(
+            prog="setlan",
+            description=description,
+            epilog="Author: Victor De Ponte <rdbvictor19@gmail.com>, @Throoze."
+            )
+        args_parser.add_argument('-v','--version', 
+            action='version', version='%(prog)s ' + self.VERSION)
+        args_parser.add_argument('-t','--token-list', action='store_true',
+            help="prints the matched Token List")
+        args_parser.add_argument('-a','--ast', action='store_true',
+            help="prints the generated Abstract Syntax Tree")
+        args_parser.add_argument('-s','--sym-table', action='store_true',
+            help="prints the generated Symbol Table")
+        args_parser.add_argument('filename',
+            help="the path to a file, with '.stl' extension, containing the program to be interpreted")
+        ns = args_parser.parse_args()
+        if not (ns.token_list or ns.sym_table or ns.ast):
+            ns.ast = True
+        self._opts = ns
         try :
-            file = open(filename, 'r')
+            file = open(self._opts.filename, 'r')
         except IOError as e:
             print "setlan: IOError: %s" % str(e)
             exit(self.ERR_BAD_FILENAME)
@@ -69,35 +80,50 @@ class SetlanInterpreter(object):
         self._parser = None
         self._ast = None
 
-    def run(self, print_lex=False, print_ast=True):
+    def run(self):
         self._lexer = Lexer(module=lexical_specs, inputString=self._inputString)
-        if print_lex:
-            for token in iter(self._lexer.token, None):
+        if self._opts.token_list:
+            print "################### Token List ####################"
+            for token in self._lexer.getTokenList():
                 print token
-        else:
-            self._parser = yacc.yacc(module=syntax_specs)
-            self._ast = self._parser.parse(lexer=self._lexer)
-            if print_ast :
-                print self._ast
+            print "################ End of Token List ################"
+        self._parser = yacc.yacc(module=syntax_specs)
+        self._ast = self._parser.parse(lexer=self._lexer, tracking=True)
+        if self._opts.ast :
+            print "############## Abstract Syntax Tree ###############"
+            print self._ast
+            print "########### End of Abstract Syntax Tree ###########"
+        self._symtable = self._ast.staticChecks()
+        if self._opts.sym_table:
+            print "################## Symbol Table ###################"
+            print self._symtable
+            print "############### End of Symbol Table ###############"
+
 
 if __name__ == '__main__':
     setlan = SetlanInterpreter()
     if (setlan.processArgs(sys.argv)):
         try:
             setlan.run()
-            exit(SetlanInterpreter.SUCCESS)
+            exit(SetlanConfig.SUCCESS)
         except SetlanInputNotDefinedException as einp:
             print einp
-            exit(SetlanInterpreter.ERR_INPUT_NOT_PROVIDED)
+            exit(SetlanConfig.ERR_INPUT_NOT_PROVIDED)
         except SetlanTokensNotDefinedException as etnd:
             print etnd
-            exit(SetlanInterpreter.ERR_LANG_LEX_MODULE_NOT_PROVIDED)
+            exit(SetlanConfig.ERR_LANG_LEX_MODULE_NOT_PROVIDED)
         except SetlanLexicalErrors as esle:
             print esle
-            exit(SetlanInterpreter.ERR_LEXICOGRAPHICAL_ERROR)
+            exit(SetlanConfig.ERR_LEXICOGRAPHICAL_ERROR)
         except SetlanValueError as esve:
             print esve
-            exit(SetlanInterpreter.ERR_VALUE_ERROR)
+            exit(SetlanConfig.ERR_VALUE_ERROR)
         except SetlanSyntaxError as esse:
             print esse
-            exit(SetlanInterpreter.ERR_SYNTAX_ERROR)
+            exit(SetlanConfig.ERR_SYNTAX_ERROR)
+        except SetlanScopeError as essce:
+            print essce
+            exit(SetlanConfig.ERR_SCOPE_ERROR)
+        except SetlanTypeError as este:
+            print este
+            exit(SetlanConfig.ERR_TYPE_ERROR)

@@ -1,0 +1,18 @@
+program {
+    using
+    int x;
+    set s;
+    in
+    repeat {
+        x = x + 1;
+        print "Aquí vale: ", x;
+    } while (x < 10);
+    s = {1,2,3,4,4,5};
+    s = {1, x};
+    s = {};
+    repeat {
+        x = x + 1;
+        print "Aquí vale: ", x;
+    } while (x < 10) do print "Done";
+    while (true) do print "its true";
+}

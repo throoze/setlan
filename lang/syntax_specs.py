@@ -24,7 +24,8 @@ tokens = tokens
 ###################### Precedence and associative rules ########################
 ################################################################################
 
-precedence = (    
+precedence = (
+    ('right', 'TkElse'),
     ('left', 'TkOr'),
     ('left', 'TkAnd'),
     ('nonassoc', 'TkGreatOrEq', 'TkLessOrEq', 'TkGreat', 'TkLess'),
@@ -32,7 +33,8 @@ precedence = (
     ('nonassoc', 'TkIsIn'),
     ('left', 'TkPlus', 'TkMinus'),
     ('left', 'TkTimes', 'TkDiv', 'TkMod'),
-    ('left', 'TkUnion', 'TkDiff', 'TkInter'),
+    ('left', 'TkUnion', 'TkDiff'),
+    ('left', 'TkInter'),
     ('left', 'TkSPlus', 'TkSMinus'),
     ('left', 'TkSTimes', 'TkSDiv', 'TkSMod'),
     ('right', 'TkNot'),
@@ -54,7 +56,7 @@ def p_Setlan(p):
     '''
     Setlan : TkProgram Instruction
     '''
-    p[0] = Setlan(instruction=p[2], position=(p.lineno(1), p.lexpos(1)))
+    p[0] = Setlan(p[2], position=(p.lineno(1), p.lexpos(1)))
 
 def p_Instruction(p):
     '''
@@ -154,9 +156,9 @@ def p_InstructionList_list(p):
 
 def p_InstructionList(p):
     '''
-    InstructionsList : Instruction TkSColon
+    InstructionsList : lambda
     '''
-    p[0] = [p[1]]
+    p[0] = p[1]
 
 def p_Input(p):
     '''
@@ -243,35 +245,26 @@ def p_Ordering_max(p):
     '''
     p[0] = False
 
-def p_While(p):
-    '''
-    While : Repeat TkWhile TkOPar Expression TkCPar Do
-    '''
-    p[0] = RepeatWhileLoop(p[1], p[4], p[6], position=(p.lineno(1), p.lexpos(1)))
 
-def p_Repeat(p):
+def p_While_1stForm(p):
     '''
-    Repeat : TkRepeat Instruction
+    While : TkRepeat Instruction TkWhile TkOPar Expression TkCPar TkDo Instruction
     '''
-    p[0] = p[2]
+    p[0] = RepeatWhileLoop(p[2], p[5], p[8], position=(p.lineno(1), p.lexpos(1)))
 
-def p_Repeat_lambda(p):
-    '''
-    Repeat : lambda
-    '''
-    p[0] = None
 
-def p_Do(p):
+def p_While_2ndForm(p):
     '''
-    Do : TkDo Instruction
+    While : TkWhile TkOPar Expression TkCPar TkDo Instruction
     '''
-    p[0] = p[2]
+    p[0] = RepeatWhileLoop(None, p[3], p[6], position=(p.lineno(1), p.lexpos(1)))
 
-def p_Do_lambda(p):
+
+def p_While_3rdForm(p):
     '''
-    Do : lambda
+    While : TkRepeat Instruction TkWhile TkOPar Expression TkCPar
     '''
-    p[0] = None
+    p[0] = RepeatWhileLoop(p[2], p[5], None, position=(p.lineno(1), p.lexpos(1)))
 
 
 def p_Expression(p):
@@ -494,11 +487,17 @@ def p_ExpressionList_list(p):
     '''
     p[0] = p[1] + [p[3]]
 
-def p_ExpressionList(p):
+def p_ExpressionList_single(p):
     '''
     ExpressionList : Expression
     '''
     p[0] = [p[1]]
+
+def p_ExpressionList(p):
+    '''
+    ExpressionList : lambda
+    '''
+    p[0] = p[1]
 
 def p_lambda(p):
     '''

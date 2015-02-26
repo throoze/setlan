@@ -1,0 +1,10 @@
+program {
+        using 
+            int x;
+            bool y;
+            set z;
+        in
+        x = 10;
+        y = true;
+        z = {1,2,3};
+    }

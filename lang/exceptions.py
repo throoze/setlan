@@ -68,3 +68,17 @@ class SetlanSyntaxError(SetlanException):
     def __unicode__(self):
         string = "SetlanSyntaxError: %s" % self._error
         return string
+
+
+class SetlanScopeError(SetlanException):
+
+    def __unicode__(self):
+        string = "SetlanScopeError: %s" % self._error
+        return string
+
+
+class SetlanTypeError(SetlanException):
+
+    def __unicode__(self):
+        string = "SetlanTypeError: %s" % self._error
+        return string
