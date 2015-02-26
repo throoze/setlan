@@ -10,6 +10,8 @@
 # ------------------------------------------------------------
 from config import SetlanConfig
 
+from exceptions import SetlanScopeError
+
 class VariableInfo(object):
     """Container for the information stored for each variable in a SymTable."""
     def __init__(self, type_class, *args, **kwargs):
@@ -112,7 +114,7 @@ class SymTable(SetlanConfig):
         """
         if name in self._scope:
             error  = "In line %d, column %d, " % type_class.getPosition()
-            error += "variable '%s' is already defined." % name
+            error += "variable '%s' was already defined." % name
             raise SetlanScopeError(error)
         value = VariableInfo(type_class)
         value.setValue(kwargs.get('value', type_class.getDefault()))
@@ -170,6 +172,6 @@ class SymTable(SetlanConfig):
             return self._father.lookup(name, position)
         else:
             error  = "In line %d, column %d, " % position
-            error += "trying to retrieve information of variable '%s' " % name
-            error += "from the current scope, but it has not been defined."
+            error += "trying to use variable '%s', " % name
+            error += "but it has not been defined in current scope."
             raise SetlanScopeError(error)

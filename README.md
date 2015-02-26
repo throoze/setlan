@@ -10,9 +10,31 @@ made in order to fulfill the requirements for aproving the course CI-3725
 _"Traductores e interpretadores"_ (Compilers and interpreters).
 
 The whole project is divided into 4 phases. The current implementation goes up
-to the first one, which contemplates the lexicographical analysis.
+to the third one, which contemplates lexicographical and syntax analysis, and
+static type and scope checks.
 
 Test files with their corresponding outputs can be found in the test folder.
+
+## Usage
+
+
+    usage: setlan [-h] [-v] [-t] [-a] [-s] filename
+
+    Setlan language interpreter, written in python, using PLY's lexing and 
+    parsing engine. At this point, only lexing, parsing and static checks are
+    supported.
+
+    positional arguments:
+      filename          the path to a file, with '.stl' extension, containing
+                        the program to be interpreted
+
+    optional arguments:
+      -h, --help        show this help message and exit
+      -v, --version     show program's version number and exit
+      -t, --token-list  prints the matched Token List
+      -a, --ast         prints the generated Abstract Syntax Tree
+      -s, --sym-table   prints the generated Symbol Table
+
 
 ## List of Tokens
 
@@ -99,49 +121,5 @@ of:
 
 ## Project status
 
-So far the complete parser is implemented with the first approach to the
-grammatic. This approach has one shift/reduce conflict when resolving the
-`if then else` instruction. This grammatic rule is implemented as follows:
-
-```
-Conditional : TkIf TkOPar Expression TkCPar Instruction Else
-
-Else : TkElse Instruction
-     | lambda
-```
-
-PLY's yacc throws the following warning message in the `parser.out` file:
-
-```
-
-WARNING: 
-WARNING: Conflicts:
-WARNING: 
-WARNING: shift/reduce conflict for TkElse in state 134 resolved as shift
-```
-
-Referencing the following rule:
-
-
-```
-state 134
-
-    (32) Conditional -> TkIf TkOPar Expression TkCPar Instruction . Else
-    (33) Else -> . TkElse Instruction
-    (34) Else -> . lambda
-    (82) lambda -> .
-
-  ! shift/reduce conflict for TkElse resolved as shift
-    TkElse          shift and go to state 141
-    $end            reduce using rule 82 (lambda -> .)
-    TkWhile         reduce using rule 82 (lambda -> .)
-    TkSColon        reduce using rule 82 (lambda -> .)
-
-  ! TkElse          [ reduce using rule 82 (lambda -> .) ]
-
-    lambda                         shift and go to state 143
-    Else                           shift and go to state 142
-```
-
-Even though the cause of the `shift/reduce` conflict is clear, a solution
-couldn't be found. Any suggestions would be appreciated.
+Lexicografical  and syntax analysis implemented, alog with static type and scope
+checks. 

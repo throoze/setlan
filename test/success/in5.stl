@@ -7,4 +7,22 @@ program {
         x = 10;
         y = true;
         z = {1,2,3};
+        {
+            using
+            int x;
+            in
+            scan x;
+            print "x es: ", x;
+            {
+                using
+                    bool y;
+                in
+                print z;
+                {
+                    using set z; in
+                    print "Todos los bloques";
+                    v = 2;
+                };
+            };
+        };
     }

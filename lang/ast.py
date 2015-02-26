@@ -122,6 +122,7 @@ class Block(Instruction):
 
     def __init__(self, declarations, instructions, *args, **kwargs):
         super(Block, self).__init__(args,kwargs)
+        self._position = kwargs.get('position', None)
         self._declarations = declarations
         self._instructions = instructions
 
@@ -157,6 +158,7 @@ class VariableDeclaration(Declaration):
 
     def __init__(self, type_class, variables, *args, **kwargs):
         super(VariableDeclaration, self).__init__(args,kwargs)
+        self._position = kwargs.get('position', None)
         self._type      = type_class
         self._variables = variables
 
@@ -184,6 +186,7 @@ class Variable(Expression):
 
     def __init__(self, tkid, *args, **kwargs):
         super(Variable, self).__init__(args,kwargs)
+        self._position = kwargs.get('position', None)
         self._id = tkid
 
     def print_ast(self, level):
@@ -202,6 +205,7 @@ class Type(Setlan):
 
     def __init__(self, *args, **kwargs):
         super(Type, self).__init__(args, kwargs)
+        self._position = kwargs.get('position', None)
         self._default = None
 
     def __eq__(self, other):
@@ -265,6 +269,7 @@ class IntegerType(Type):
 
     def __init__(self, *args, **kwargs):
         super(IntegerType, self).__init__(args, kwargs)
+        self._position = kwargs.get('position', None)
         self._default = 0
 
     def __unicode__(self):
@@ -275,6 +280,7 @@ class BooleanType(Type):
 
     def __init__(self, *args, **kwargs):
         super(BooleanType, self).__init__(args, kwargs)
+        self._position = kwargs.get('position', None)
         self._default = False
 
     def __unicode__(self):
@@ -285,6 +291,7 @@ class SetType(Type):
 
     def __init__(self, *args, **kwargs):
         super(SetType, self).__init__(args, kwargs)
+        self._position = kwargs.get('position', None)
         self._default = set([])
 
     def __unicode__(self):
