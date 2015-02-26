@@ -12,7 +12,7 @@ from config import SetlanConfig
 
 from sym_table import SymTable
 
-from exceptions import ( SetlanTypeError, SetlanSyntaxError)
+from exceptions import (SetlanTypeError, SetlanSyntaxError, SetlanStaticErrors)
 
 class Setlan(SetlanConfig):
 
@@ -198,7 +198,9 @@ class Variable(Expression):
 
     def _check(self, symtable):
         var_info = symtable.lookup(self.getName(),self._position)
-        return var_info.getType()
+        if var_info is not None:
+            return var_info.getType()
+
 
 
 class Type(Setlan):
@@ -319,13 +321,16 @@ class Assignment(Instruction):
     def _check(self, symtable):
         var_info = symtable.lookup(self._variable.getName(), self._position)
         val_type_class = self._value._check(symtable)
+        if var_info is None:
+            return True
         if not var_info.canAssign(val_type_class):
             error  = "In line %d, column %d, " % self._position
             error += "cannot assign a %s value to a %s variable." % (
                 val_type_class,
                 var_info.getType()
                 )
-            raise SetlanTypeError(error)
+            errors_acc = SetlanStaticErrors.Instance()
+            errors_acc.add_error(SetlanTypeError(error))
         return True
 
 
@@ -353,6 +358,7 @@ class Output(Instruction):
 
     def __init__(self, printables, *args, **kwargs):
         super(Output, self).__init__(args,kwargs)
+        self._position = kwargs.get('position', None)
         self._printables = printables
         self._lnsufix = kwargs.get('sufix',None)
         if self._lnsufix is None:
@@ -385,6 +391,7 @@ class Conditional(Instruction):
 
     def __init__(self, condition, instruction, alt_instruction=None, *args, **kwargs):
         super(Conditional, self).__init__(args,kwargs)
+        self._position = kwargs.get('position', None)
         self._condition = condition
         self._instruction = instruction
         self._alt_instruction = alt_instruction
@@ -411,7 +418,8 @@ class Conditional(Instruction):
             error  = "In line %d, column %d, " % self._position
             error += "conditional statement expression must be Boolean. "
             error += "Found '%s' instead." % condition_type
-            raise SetlanTypeError(error)
+            errors_acc = SetlanStaticErrors.Instance()
+            errors_acc.add_error(SetlanTypeError(error))
         return instruction_check and alt_instruction_check
 
 
@@ -420,6 +428,7 @@ class ForLoop(Instruction):
 
     def __init__(self, variable, ordering, set_exp, instruction, *args, **kwargs):
         super(ForLoop, self).__init__(args,kwargs)
+        self._position    = kwargs.get('position', None)
         self._variable    = variable
         self._ordering    = ordering
         self._set         = set_exp
@@ -449,7 +458,8 @@ class ForLoop(Instruction):
         if not self._set._check(symtable).isSet():
             error  = "In line %d, column %d, " % self._position
             error += "For loop expression must be of Set type."
-            raise SetlanTypeError(error)
+            errors_acc = SetlanStaticErrors.Instance()
+            errors_acc.add_error(SetlanTypeError(error))
         if self._instruction is not None:
             self._instruction._check(new_symtable)
         if symtable is None:
@@ -462,6 +472,7 @@ class RepeatWhileLoop(Instruction):
 
     def __init__(self, prev_instruction, condition, instruction, *args, **kwargs):
         super(RepeatWhileLoop, self).__init__(args,kwargs)
+        self._position         = kwargs.get('position', None)
         self._prev_instruction = prev_instruction
         self._condition        = condition
         self._instruction      = instruction
@@ -496,7 +507,8 @@ class RepeatWhileLoop(Instruction):
             error  = "In line %d, column %d, " % self._position
             error += "conditional statement expression must be Boolean. "
             error += "Found '%s' instead." % condition_type
-            raise SetlanTypeError(error)
+            errors_acc = SetlanStaticErrors.Instance()
+            errors_acc.add_error(SetlanTypeError(error))
         return prev_inst_check and instruction_check
 
 
@@ -505,6 +517,7 @@ class BinaryExpression(Expression):
     def __init__(self, left, op, right, *args, **kwargs):
         super(BinaryExpression, self).__init__(args,kwargs)
         self._position = kwargs.get('position', None)
+        self._expected_type = None
         self._left = left
         self._function = op
         self._right = right
@@ -530,7 +543,6 @@ class SameTypeBinaryExpression(BinaryExpression):
     def __init__(self, left, op, right, *args, **kwargs):
         super(SameTypeBinaryExpression, self).__init__(left,op,right,args,kwargs)
         self._position = kwargs.get('position', None)
-        self._expected_type = None
     
     def _check(self, symtable):
         left_type = self._left._check(symtable)
@@ -543,7 +555,9 @@ class SameTypeBinaryExpression(BinaryExpression):
                 left_type,
                 right_type
                 )
-            raise SetlanTypeError(error)
+            errors_acc = SetlanStaticErrors.Instance()
+            errors_acc.add_error(SetlanTypeError(error))
+            return self._expected_type
         return left_type
 
 
@@ -563,7 +577,9 @@ class ComparationBinaryExpression(BinaryExpression):
                 left_type,
                 right_type
                 )
-            raise SetlanTypeError(error)
+            errors_acc = SetlanStaticErrors.Instance()
+            errors_acc.add_error(SetlanTypeError(error))
+            return self._expected_type
         return BooleanType(position=self._position)
 
 
@@ -585,7 +601,9 @@ class IntSetSetExpression(BinaryExpression):
                 right_type
                 )
             error += "Expected: Integer and Set, in this order."
-            raise SetlanTypeError(error)
+            errors_acc = SetlanStaticErrors.Instance()
+            errors_acc.add_error(SetlanTypeError(error))
+            return self._expected_type
         return right_type
 
 
@@ -607,7 +625,9 @@ class IntSetBooleanExpression(BinaryExpression):
                 right_type
                 )
             error += "Expected: Integer and Set, in this order."
-            raise SetlanTypeError(error)
+            errors_acc = SetlanStaticErrors.Instance()
+            errors_acc.add_error(SetlanTypeError(error))
+            return self._expected_type
         return BooleanType(position=self._position)
 
 
@@ -616,6 +636,7 @@ class UnaryExpression(Expression):
     def __init__(self, op, expression, *args, **kwargs):
         super(UnaryExpression, self).__init__(args,kwargs)
         self._position = kwargs.get('position', None)
+        self._expected_type = None
         self._expression = expression
         self._function = op
         self._operation = ""
@@ -635,6 +656,7 @@ class IntUnaryExpression(UnaryExpression):
     def __init__(self, op, expression, *args, **kwargs):
         super(IntUnaryExpression, self).__init__(op,expression,args,kwargs)
         self._position = kwargs.get('position', None)
+        self._expected_type = IntegerType(position=self._position)
     
     def _check(self, symtable):
         type_class = self._expression._check(symtable)
@@ -645,7 +667,9 @@ class IntUnaryExpression(UnaryExpression):
                 type_class
                 )
             error += "Expected: Integer."
-            raise SetlanTypeError(error)
+            errors_acc = SetlanStaticErrors.Instance()
+            errors_acc.add_error(SetlanTypeError(error))
+            return self._expected_type
         return type_class
 
 
@@ -654,6 +678,7 @@ class SetUnaryExpression(UnaryExpression):
     def __init__(self, op, expression, *args, **kwargs):
         super(SetUnaryExpression, self).__init__(op,expression,args,kwargs)
         self._position = kwargs.get('position', None)
+        self._expected_type = SetType(position=self._position)
     
     def _check(self, symtable):
         type_class = self._expression._check(symtable)
@@ -664,7 +689,9 @@ class SetUnaryExpression(UnaryExpression):
                 type_class
                 )
             error += "Expected: Set."
-            raise SetlanTypeError(error)
+            errors_acc = SetlanStaticErrors.Instance()
+            errors_acc.add_error(SetlanTypeError(error))
+            return self._expected_type
         return type_class
 
 
@@ -673,6 +700,7 @@ class BoolUnaryExpression(UnaryExpression):
     def __init__(self, op, expression, *args, **kwargs):
         super(BoolUnaryExpression, self).__init__(op,expression,args,kwargs)
         self._position = kwargs.get('position', None)
+        self._expected_type = BooleanType(position=self._position)
     
     def _check(self, symtable):
         type_class = self._expression._check(symtable)
@@ -683,7 +711,9 @@ class BoolUnaryExpression(UnaryExpression):
                 type_class
                 )
             error += "Expected: Boolean."
-            raise SetlanTypeError(error)
+            errors_acc = SetlanStaticErrors.Instance()
+            errors_acc.add_error(SetlanTypeError(error))
+            return self._expected_type
         return type_class
 
 

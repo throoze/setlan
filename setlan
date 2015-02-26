@@ -24,6 +24,7 @@ from lang.exceptions import (
     SetlanLexicalErrors,
     SetlanValueError,
     SetlanSyntaxError,
+    SetlanStaticErrors,
     SetlanScopeError,
     SetlanTypeError
     )
@@ -94,10 +95,14 @@ class SetlanInterpreter(SetlanConfig):
             print self._ast
             print "########### End of Abstract Syntax Tree ###########"
         self._symtable = self._ast.staticChecks()
-        if self._opts.sym_table:
-            print "################## Symbol Table ###################"
-            print self._symtable
-            print "############### End of Symbol Table ###############"
+        errors_acc = SetlanStaticErrors.Instance()
+        if errors_acc.has_errors():
+            raise errors_acc
+        else:
+            if self._opts.sym_table:
+                print "################## Symbol Table ###################"
+                print self._symtable
+                print "############### End of Symbol Table ###############"
 
 
 if __name__ == '__main__':
@@ -121,6 +126,9 @@ if __name__ == '__main__':
         except SetlanSyntaxError as esse:
             print esse
             exit(SetlanConfig.ERR_SYNTAX_ERROR)
+        except SetlanStaticErrors.Instance().__class__ as esste:
+            print esste
+            exit(SetlanConfig.ERR_STATIC_ERROR)
         except SetlanScopeError as essce:
             print essce
             exit(SetlanConfig.ERR_SCOPE_ERROR)

@@ -10,7 +10,7 @@
 # ------------------------------------------------------------
 from config import SetlanConfig
 
-from exceptions import SetlanScopeError
+from exceptions import (SetlanScopeError, SetlanStaticErrors)
 
 class VariableInfo(object):
     """Container for the information stored for each variable in a SymTable."""
@@ -115,7 +115,8 @@ class SymTable(SetlanConfig):
         if name in self._scope:
             error  = "In line %d, column %d, " % type_class.getPosition()
             error += "variable '%s' was already defined." % name
-            raise SetlanScopeError(error)
+            errors_acc = SetlanStaticErrors.Instance()
+            errors_acc.add_error(SetlanScopeError(error))
         value = VariableInfo(type_class)
         value.setValue(kwargs.get('value', type_class.getDefault()))
         self._scope[name] = value
@@ -132,7 +133,8 @@ class SymTable(SetlanConfig):
             error  = "In line %d, column %d, " % position
             error += "trying to delete variable '%s' from the current " % name
             error += "scope, but it has not been defined."
-            raise SetlanScopeError(error)
+            errors_acc = SetlanStaticErrors.Instance()
+            errors_acc.add_error(SetlanScopeError(error))
 
     def update(self, name, value, position):
         """
@@ -148,7 +150,8 @@ class SymTable(SetlanConfig):
             error  = "In line %d, column %d, " % position
             error += "trying to update variable '%s' from the current " % name
             error += "scope, but it has not been defined."
-            raise SetlanScopeError(error)
+            errors_acc = SetlanStaticErrors.Instance()
+            errors_acc.add_error(SetlanScopeError(error))
 
     def contains(self, name):
         """
@@ -174,4 +177,6 @@ class SymTable(SetlanConfig):
             error  = "In line %d, column %d, " % position
             error += "trying to use variable '%s', " % name
             error += "but it has not been defined in current scope."
-            raise SetlanScopeError(error)
+            errors_acc = SetlanStaticErrors.Instance()
+            errors_acc.add_error(SetlanScopeError(error))
+            return None

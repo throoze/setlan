@@ -21,7 +21,6 @@ program {
                 {
                     using set z; in
                     print "Todos los bloques";
-                    v = 2;
                 };
             };
         };

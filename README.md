@@ -5,7 +5,7 @@ Author: Victor De Ponte, 05-38087 ([email](mailto:rdbvictor19@gmail.com))
 
 
 `setlan` is a python implementation for the language Setlan, defined
-[here](http://ldc.usb.ve/~09-10285/files/def/setlan-3.pdf) (spanish). It was
+[here](http://ldc.usb.ve/~09-10285/files/def/setlan-6.pdf) (spanish). It was
 made in order to fulfill the requirements for aproving the course CI-3725
 _"Traductores e interpretadores"_ (Compilers and interpreters).
 

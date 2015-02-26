@@ -7,6 +7,8 @@
 # Author:
 # Victor De Ponte, 05-38087, <rdbvictor19@gmail.com>
 # ------------------------------------------------------------
+from lib.singleton import Singleton
+
 
 class SetlanException(Exception):
 
@@ -82,3 +84,30 @@ class SetlanTypeError(SetlanException):
     def __unicode__(self):
         string = "SetlanTypeError: %s" % self._error
         return string
+
+
+class SetlanSkipError(SetlanException):
+
+    def __unicode__(self):
+        string = "SetlanTypeError: %s" % self._error
+        return string
+
+
+@Singleton
+class SetlanStaticErrors(SetlanException):
+
+    def __init__(self):
+        self._error = "Static check time errors were found:"
+        self._errors = []
+
+    def __unicode__(self):
+        string = "SetlanStaticErrors: %s" % self._error
+        for error in self._errors:
+            string += "\n\t%s" % error
+        return string
+
+    def add_error(self, error):
+        self._errors.append(error)
+
+    def has_errors(self):
+        return (self._errors is not None) and self._errors
