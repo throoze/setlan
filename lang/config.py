@@ -99,7 +99,7 @@ class SetlanConfig(object):
         elif integer > 2147483647:
             overflow = True
             error += "In line %d, column %d, " % position
-            error += "integer is greater than -2147483648. Setlan supports "
+            error += "integer is greater than 2147483647. Setlan supports "
             error += "only 32 bit signed integers."
         if overflow:
             raise SetlanOverflowError(error)

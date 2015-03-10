@@ -175,7 +175,7 @@ class SymTable(SetlanConfig):
         """
         if name in self._scope:
             previous = self._scope[name]
-            previous.setValue(value)
+            previous.setValue(self.checkOverflow(value, position))
             self._scope[name] = previous
         elif self._father is not None:
             self._father.update(name, value, position)

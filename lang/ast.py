@@ -890,7 +890,7 @@ class Division(SameTypeBinaryExpression):
         if right == 0:
             error  = "In line %d, column %d, " % self._position
             error += "cannot divide by zero value."
-            raise SetlanZeroDivisionError()
+            raise SetlanZeroDivisionError(error)
         return self.checkOverflow(left / right, self._position)
 
 
@@ -907,8 +907,8 @@ class Modulus(SameTypeBinaryExpression):
     def _modulus(self, left, right):
         if right == 0:
             error  = "In line %d, column %d, " % self._position
-            error += "cannot divide by zero value."
-            raise SetlanZeroDivisionError()
+            error += "cannot calculate modulus by zero value."
+            raise SetlanZeroDivisionError(error)
         return self.checkOverflow(left % right, self._position)
 
 

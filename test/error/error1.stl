@@ -1,0 +1,24 @@
+program {
+    using
+        set s;
+        int x, y, z;
+    in
+
+    # for testing zero division error
+    scan x;
+    scan y;
+    z = x / y;
+
+    # for testing zero division error
+    scan x;
+    scan y;
+    z = x % y;
+
+    # for testing overflow error
+    scan x;
+
+    # for testing min and max operations over empty set
+    #println >? s;
+    println <? s;
+
+}
