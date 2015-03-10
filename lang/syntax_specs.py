@@ -13,6 +13,8 @@ from exceptions import SetlanSyntaxError
 
 from lexical_specs import tokens
 
+from type import *
+
 from ast import *
 
 ##########

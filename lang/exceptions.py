@@ -83,13 +83,16 @@ class SetlanTypeError(SetlanException):
 
     def __unicode__(self):
         string = "SetlanTypeError: %s" % self._error
+        if "undefined" in string:
+            string += " This is probably due to a previous static error "
+            string += "(undefined variable or type error)."
         return string
 
 
-class SetlanSkipError(SetlanException):
+class SetlanReadOnlyModificationError(SetlanException):
 
     def __unicode__(self):
-        string = "SetlanTypeError: %s" % self._error
+        string = "SetlanReadOnlyModificationError: %s" % self._error
         return string
 
 
@@ -107,7 +110,29 @@ class SetlanStaticErrors(SetlanException):
         return string
 
     def add_error(self, error):
-        self._errors.append(error)
+        if not "undefined" in error._error:
+            self._errors.append(error)
 
     def has_errors(self):
         return (self._errors is not None) and self._errors
+
+
+class SetlanZeroDivisionError(SetlanException):
+
+    def __unicode__(self):
+        string = "SetlanZeroDivisionError: %s" % self._error
+        return string
+
+
+class SetlanOverflowError(SetlanException):
+
+    def __unicode__(self):
+        string = "SetlanOverflowError: %s" % self._error
+        return string
+
+
+class SetlanEmptySetError(SetlanException):
+
+    def __unicode__(self):
+        string = "SetlanEmptySetError: %s" % self._error
+        return string

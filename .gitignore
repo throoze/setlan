@@ -67,3 +67,6 @@ contexterr/
 sentinel-v2
 shouldfail/
 shouldpass/
+
+# Mac OS
+.DS_Store

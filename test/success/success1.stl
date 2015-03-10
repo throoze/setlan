@@ -1,0 +1,84 @@
+program {
+    using
+        int x, y, z;
+        bool t, f;
+        set s;
+    in
+    x = 1;
+    y = 2;
+    scan z;
+    t = true;
+    scan f;
+    s = {9,1,8,2,7,3,6,4,5};
+    println "Integers: ", x, ", ", y, ", ", z;
+    println "Booleans: ", t, ", ",f;
+    println "Set: ", s;
+    if (f) {
+        println "Entró en el if";
+    } else {
+        println "Entró en el else";
+    };
+    for i min 2 <-> s do {
+        println i;
+    };
+    println "Suma para conjuntos (1 <+> s): ", 1 <+> s;
+    println "Resta para conjuntos (1 <-> s): ", 1 <-> s;
+    println "Multiplicacion para conjuntos (1 <*> s): ", 1 <*> s;
+    println "Division para conjuntos (1 </> s): ", 1 </> s;
+    println "Modulo para conjuntos (1 <%> s): ", 1 <%> s;
+
+    println "Una linea con todas las operaciones aritméticas: ", 0+1-2/3%4;
+    println "Menos unario: ", -z;
+
+    println "Veamos el tamaño, el máximo y el mínimo del conjunto 's':";
+    println "Conjunto: ", s;
+    println "Tamaño: ", $? s;
+    println "Máximo: ", >? s;
+    println "Mínimo: ", <? s;
+
+    println "Ahora operaciones booleanas:";
+    println "True and False: ", true and false;
+    println "True or False: ", true or false;
+    println "not True: ", not true;
+
+    println "Ahora comparaciones:";
+    println "42 > 24: ", 42 > 24;
+    println "42 < 24: ", 42 < 24;
+    println "42 >= 24: ", 42 >= 24;
+    println "42 <= 24: ", 42 <= 24;
+    println "42 == 24: ", 42 == 24;
+    println "42 /= 24: ", 42 /= 24;
+    println "Introduzca x:";
+    scan x;
+    println "Introduzca y:";
+    scan y;
+    println "x > y: ", x > y;
+
+    println "Veamos si x pertenece al conjunto:";
+    println "Pertenece? : ", x @ s;
+
+    println "Por último, probemos el repeat-while-do, en sus tres formas.";
+    println "Usemos los ejemplos de los enunciados:";
+
+    println "Primer caso (repeat-while-do):";
+    repeat # primer caso, atípico pero cómodo
+        scan x
+    while (x > 0) do
+        println x
+    ;
+
+    println "Segundo caso (while-do): x == ", x;
+    scan x;
+    while (x > 0) do { # segundo caso, un `while do {...}` típico
+        println x;
+        scan x;
+    };
+
+    println "Tercer caso (repeat-while):";
+    scan x;
+    repeat { # tercer caso, parecido a un `do {...} while` de C
+        println x;
+        scan x;
+    } while (x > 0);
+
+}

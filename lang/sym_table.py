@@ -12,12 +12,15 @@ from config import SetlanConfig
 
 from exceptions import (SetlanScopeError, SetlanStaticErrors)
 
+from type import Type
+
 class VariableInfo(object):
     """Container for the information stored for each variable in a SymTable."""
     def __init__(self, type_class, *args, **kwargs):
         super(VariableInfo, self).__init__()
         self._type = type_class
         self._value = kwargs.get('value', None)
+        self._read_only = kwargs.get('read_only', False)
 
     def __str__(self):
         string = "{ type : '%s', value : '%s' }" % (
@@ -44,8 +47,20 @@ class VariableInfo(object):
     def setValue(self, value):
         self._value = value
 
+    def isReadOnly(self):
+        return self._read_only
+
     def canAssign(self, type_class):
         return self._type.canBeAssigned(type_class)
+
+    def isInt(self):
+        return self._type.isInt()
+
+    def isBool(self):
+        return self._type.isBool()
+
+    def isSet(self):
+        return self._type.isSet()
 
 
 class SymTable(SetlanConfig):
@@ -81,8 +96,22 @@ class SymTable(SetlanConfig):
         return self._father
 
     def _format_entry(self, name, info):
+        value = info.getValue()
+        if info.getType().isSet():
+            if isinstance(value, set):
+                string = "{"
+                if value:
+                    first = True
+                    for elem in value:
+                        if first:
+                            first = not first
+                            string += str(elem)
+                        else:
+                            string += ", " + str(elem)
+                string += "}"
+                value = string
         string = "Variable: %s | Type: %s | Value: %s" % (
-            name, str(info.getType()), str(info.getValue())
+            name, str(info.getType()), str(value)
             )
         return string
 
@@ -108,16 +137,20 @@ class SymTable(SetlanConfig):
         """
         self._children.append(child)
 
-    def insert(self, name, type_class, *args, **kwargs):
+    def insert(self, name, type_class, position, *args, **kwargs):
         """
         Adds a new symbol to this SymTable
         """
         if name in self._scope:
-            error  = "In line %d, column %d, " % type_class.getPosition()
+            error  = "In line %d, column %d, " % position
             error += "variable '%s' was already defined." % name
             errors_acc = SetlanStaticErrors.Instance()
             errors_acc.add_error(SetlanScopeError(error))
-        value = VariableInfo(type_class)
+        value = None
+        if kwargs.get('read_only', False):
+            value = VariableInfo(type_class, read_only=True)
+        else:
+            value = VariableInfo(type_class)
         value.setValue(kwargs.get('value', type_class.getDefault()))
         self._scope[name] = value
 
@@ -179,4 +212,10 @@ class SymTable(SetlanConfig):
             error += "but it has not been defined in current scope."
             errors_acc = SetlanStaticErrors.Instance()
             errors_acc.add_error(SetlanScopeError(error))
-            return None
+            return VariableInfo(Type(position=position))
+
+
+
+
+
+
