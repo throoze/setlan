@@ -1,3 +1,12 @@
+#!/usr/bin/env python
+# ------------------------------------------------------------
+# type.py
+#
+# Setlan type representation classes
+#
+# Author:
+# Victor De Ponte, 05-38087, <rdbvictor19@gmail.com>
+# ------------------------------------------------------------
 from config import SetlanConfig
 
 class Type(SetlanConfig):
