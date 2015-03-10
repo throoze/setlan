@@ -10,30 +10,34 @@ made in order to fulfill the requirements for aproving the course CI-3725
 _"Traductores e interpretadores"_ (Compilers and interpreters).
 
 The whole project is divided into 4 phases. The current implementation goes up
-to the third one, which contemplates lexicographical and syntax analysis, and
-static type and scope checks.
+to the fourth one, which contemplates lexicographical and syntax analysis,
+static type and scope checks, dynamic checks and execution of setlan code.
 
-Test files with their corresponding outputs can be found in the test folder.
+Testing files can be found in the `test` folder.
 
 ## Usage
 
 
-    usage: setlan [-h] [-v] [-t] [-a] [-s] filename
+        usage: setlan [-h] [-v] [-t] [-a] [-s] [-e] filename
 
-    Setlan language interpreter, written in python, using PLY's lexing and 
-    parsing engine. At this point, only lexing, parsing and static checks are
-    supported.
+        Setlan language interpreter, written in python, using PLY's lexing and parsing
+        engine. At this point, lexing, parsing, static checks and execution are
+        supported. Next is the explanation of setlan interpreter usage and options. In
+        case the user doesn't pass any flag, the flag -e is set to True by default.
+        Otherwise, only the options explicitly passed will be taken into account,
+        according to the following specification:
 
-    positional arguments:
-      filename          the path to a file, with '.stl' extension, containing
-                        the program to be interpreted
+        positional arguments:
+          filename          the path to a file, with '.stl' extension, containing the
+                            program to be interpreted
 
-    optional arguments:
-      -h, --help        show this help message and exit
-      -v, --version     show program's version number and exit
-      -t, --token-list  prints the matched Token List
-      -a, --ast         prints the generated Abstract Syntax Tree
-      -s, --sym-table   prints the generated Symbol Table
+        optional arguments:
+          -h, --help        show this help message and exit
+          -v, --version     show program's version number and exit
+          -t, --token-list  prints the matched Token List
+          -a, --ast         prints the generated Abstract Syntax Tree
+          -s, --sym-table   prints the generated Symbol Table
+          -e, --execute     executes the program in <filename> and exit.
 
 
 ## List of Tokens
@@ -119,7 +123,19 @@ of:
 4. A more object oriented structure was decided while rewriting the main module.
    (See `setlan` file).
 
+5. A singleton class has been added to record static errors, so the interpreter
+   can keep checking the code without stoping in the first static error.
+
+6. Type representation classes where moved to a separated module, in order to
+   avoid circular imports.
+
+7. A new flag was added, (-e). Check usage in the previous section.
+
+8. KeyboardInterrupt is catched so the interpreter can be stopped in a smoother
+   way.
+
 ## Project status
 
-Lexicografical  and syntax analysis implemented, alog with static type and scope
-checks. 
+At this moment, lexicographical and syntax analysis, static type and scope
+checks, dynamic checks and execution of setlan code can be done. Also, correct
+lexical, syntactic, static and dynamic error reporting is done via exceptions.
